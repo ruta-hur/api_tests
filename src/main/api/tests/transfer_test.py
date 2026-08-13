@@ -1,4 +1,4 @@
-import random, pytest
+import pytest
 from sqlalchemy.orm import Session
 from src.main.api.classes.api_manager import ApiManager
 from src.main.api.models.create_user_request import CreateUserRequest
@@ -10,18 +10,9 @@ from src.main.api.db.crud.account_crud import AccountCrudDb as Account
 @pytest.mark.api
 
 class TestTransfer:
-    def test_transfer_valid(self, api_manager: ApiManager, create_user_request: CreateUserRequest, db_session: Session):
-        account1_response = api_manager.user_steps.create_account(create_user_request)
+    def test_transfer_valid(self, api_manager: ApiManager, create_user_request: CreateUserRequest, deposit_account: DepositRequest, db_session: Session):
+        account1_response, deposit_request, deposit_response = deposit_account
 
-        deposit_request = DepositRequest(
-            accountId = account1_response.id,
-            amount = random.randint(1000, 9000)
-        )
-
-        deposit_response = api_manager.user_steps.deposit_account(
-            create_user_request,
-            deposit_request
-        )
         account2_response = api_manager.user_steps.create_account(create_user_request)
 
         transfer_request = TransferRequest(
@@ -30,7 +21,10 @@ class TestTransfer:
             amount = deposit_request.amount - 500
         )
 
-        transfer_response = api_manager.user_steps.transfer(create_user_request, transfer_request)
+        transfer_response = api_manager.user_steps.transfer(
+            create_user_request,
+            transfer_request
+        )
 
         assert transfer_response.fromAccountIdBalance == deposit_response.balance - transfer_request.amount, "Balance is not updated"
 
@@ -41,20 +35,10 @@ class TestTransfer:
         assert account_id_from_db.balance == transfer_request.amount, "Balance is not updated"
 
 
-    def test_transfer_invalid(self, api_manager: ApiManager, create_user_request: CreateUserRequest, db_session: Session):
+    def test_transfer_invalid(self, api_manager: ApiManager, create_user_request: CreateUserRequest, deposit_account: DepositRequest, db_session: Session):
         #balance is less than transfer
+        account1_response, deposit_request, deposit_response = deposit_account
 
-        account1_response = api_manager.user_steps.create_account(create_user_request)
-
-        deposit_request = DepositRequest(
-            accountId = account1_response.id,
-            amount = random.randint(1000, 9000)
-        )
-
-        deposit_response = api_manager.user_steps.deposit_account(
-            create_user_request,
-            deposit_request
-        )
         account2_response = api_manager.user_steps.create_account(create_user_request)
 
         transfer_request = TransferRequest(
@@ -63,7 +47,10 @@ class TestTransfer:
             amount = deposit_request.amount + 500
         )
 
-        response = api_manager.user_steps.transfer_invalid(create_user_request, transfer_request)
+        transfer_response = api_manager.user_steps.transfer_invalid(
+            create_user_request,
+            transfer_request
+        )
 
         account_id_from_db = Account.get_account_by_id(db_session, account1_response.id)
         assert account_id_from_db.balance == deposit_request.amount, "Balance is not updated"

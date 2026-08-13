@@ -16,7 +16,7 @@ class AdminSteps(BaseSteps):
             ResponseSpecs.request_ok()
         ).post(create_user_request)
 
-        self.created_obj.append(response)
+        self.created_obj.append(response) 
         return response
 
     def create_credit_user(self, create_credit_user_request: CreateCreditUserRequest):

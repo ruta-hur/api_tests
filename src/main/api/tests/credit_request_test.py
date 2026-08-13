@@ -1,4 +1,3 @@
-import random
 import pytest
 from sqlalchemy.orm import Session
 from src.main.api.classes.api_manager import ApiManager
@@ -7,6 +6,7 @@ from src.main.api.models.create_user_request import CreateCreditUserRequest, Cre
 from src.main.api.models.credit_request_request import CreditRequestRequest
 from src.main.api.db.crud.credit_crud import CreditCrudDb as Credit
 from src.main.api.db.crud.account_crud import AccountCrudDb as Account
+from src.main.api.random.random_data import RandomData
 
 
 @pytest.mark.api
@@ -17,7 +17,7 @@ class TestCreditRequest:
 
         credit_request_request = CreditRequestRequest(
             accountId = account_response.id,
-            amount = random.randint(5000, 15000),
+            amount = RandomData.credit_request_amount(),
             termMonths = 12
         )
         credit_response = api_manager.credit_user_steps.credit_request(
@@ -40,7 +40,7 @@ class TestCreditRequest:
 
         credit_request_request = CreditRequestRequest(
             accountId = account_response.id,
-            amount = random.randint(5000, 15000),
+            amount = RandomData.credit_request_amount(),
             termMonths = 12
         )
         credit_response = api_manager.credit_user_steps.credit_request_invalid(
